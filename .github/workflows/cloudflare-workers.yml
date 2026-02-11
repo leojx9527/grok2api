@@ -171,54 +171,36 @@ jobs:
           print(f"D1 database ready: {d1_name} ({d1_id})")
           print(f"Generated {dst_path}")
           PY
-- name: Verify US placement
-  run: |
-    python -u - <<'PY'
-    import tomlib
-    import os
 
-    # 读取 GitHub SHA 作为 BUILD_SHA
-    build_sha = os.environ.get('GITHUB_SHA', 'unknown')
+      - name: Verify US placement
+        run: |
+          python -u - <<'PY'
+          import tomlib
+          import os
 
-    # 读取并修改 wrangler.ci.toml
-    with open('wrangler.ci.toml', 'r') as f:
-        config = tomlib.load(f)
+          # 读取 GitHub SHA 作为 BUILD_SHA
+          build_sha = os.environ.get('GITHUB_SHA', 'unknown')
 
-    # 添加 BUILD_SHA 配置
-    config['BUILD_SHA'] = build_sha
+          # 读取并修改 wrangler.ci.toml
+          with open('wrangler.ci.toml', 'r') as f:
+              config = tomlib.load(f)
 
-    # 写回文件
-    with open('wrangler.ci.toml', 'w') as f:
-        tomlib.dump(config, f)
+          # 添加 BUILD_SHA 到 vars 段
+          if 'vars' not in config:
+              config['vars'] = {}
+          config['vars']['BUILD_SHA'] = build_sha
 
-    # 验证 placement 区域
-    with open("wrangler.ci.toml", "rb") as f:
-        data = tomlib.load(f)
-    placement = data.get("placement") or {}
-    region = (placement.get("region") or "").strip()
-    if region != "aws:us-east-1":
-        raise SystemExit(
-            'wrangler.ci.toml: missing required [placement] region = "aws:us-east-1"'
-        )
+          # 写回文件
+          with open('wrangler.ci.toml', 'w') as f:
+              tomlib.dump(config, f)
 
-    # 目录规范化函数
-    def normalize_dir(v: str) -> str:
-        s = (v or "").strip().replace("\\\\", "/")
-        while s.startswith("./"):
-            s = s[2:]
-        s = s.rstrip("/")
-        return s
-  env:
-    GITHUB_SHA: ${{ github.sha }}
-
-          with open("wrangler.ci.toml", "rb") as f:
-              data = tomllib.load(f)
-          placement = data.get("placement") or {}
+          # 验证 placement 区域
+          placement = config.get("placement") or {}
           region = (placement.get("region") or "").strip()
           if region != "aws:us-east-1":
-              raise SystemExit(
-                  'wrangler.ci.toml: missing required [placement] region = "aws:us-east-1"'
-              )
+              raise SystemExit('wrangler.ci.toml: missing required [placement] region = "aws:us-east-1"')
+
+          # 验证 Assets 绑定
           def normalize_dir(v: str) -> str:
               s = (v or "").strip().replace("\\\\", "/")
               while s.startswith("./"):
@@ -226,21 +208,26 @@ jobs:
               s = s.rstrip("/")
               return s
 
-          assets = data.get("assets") or {}
+          assets = config.get("assets") or {}
           directory = normalize_dir(assets.get("directory") or "")
           binding = (assets.get("binding") or "").strip()
           if directory != "app/static" or binding != "ASSETS":
               raise SystemExit(
                   'wrangler.ci.toml: missing required assets binding. '
-                  f'Expected directory="./app/static" (or "app/static") and binding="ASSETS", '
+                  f'Expected directory="./app/static" and binding="ASSETS", '
                   f'got directory={assets.get("directory")!r}, binding={assets.get("binding")!r}'
               )
-          vars = data.get("vars") or {}
-          build_sha = str(vars.get("BUILD_SHA") or "").strip()
-          if not build_sha or build_sha == "dev":
+
+          # 验证 BUILD_SHA
+          vars = config.get("vars") or {}
+          build_sha_check = str(vars.get("BUILD_SHA") or "").strip()
+          if not build_sha_check or build_sha_check == "dev":
               raise SystemExit('wrangler.ci.toml: BUILD_SHA not set (expected CI to inject GITHUB_SHA)')
-          print(f"OK: placement.region = aws:us-east-1; BUILD_SHA={build_sha}")
+          
+          print(f"OK: placement.region = aws:us-east-1; BUILD_SHA={build_sha_check}")
           PY
+        env:
+          GITHUB_SHA: ${{ github.sha }}
 
       - name: Apply D1 migrations
         run: npx wrangler d1 migrations apply DB --remote --config wrangler.ci.toml
