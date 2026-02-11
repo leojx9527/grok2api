@@ -17,3 +17,11 @@ region = "aws:us-east-1"
 [assets]
 binding = "ASSETS"
 directory = "./app/static"
+[[d1_databases]]
+binding = "DB"
+database_name = "grok2api"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+[[kv_namespaces]]
+binding = "cache"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
