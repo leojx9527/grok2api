@@ -1,8 +1,19 @@
+# Workers 项目名称
 name = "grok2api"
+# 代码入口文件
 main = "src/index.js"
+# 兼容性日期
 compatibility_date = "2026-02-11"
+# 使用 workers.dev 子域名
 workers_dev = true
-account_id = "51558f58e6bdf1c01670695acc75a730" # 替换为你的账号ID
+# 你的 Cloudflare 账号 ID
+account_id = "51558f58e6bdf1c01670695acc75a730"
 
+# 添加 placement 配置
 [placement]
 region = "aws:us-east-1"
+
+# 添加 Assets 绑定配置（关键！解决当前报错）
+[assets]
+binding = "ASSETS"
+directory = "./app/static"
