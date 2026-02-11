@@ -174,15 +174,14 @@ jobs:
 
       - name: Verify US placement
         run: |
-          # 安装 tomllib（Python <3.11 需手动安装）
           python -m pip install tomli
           python -u - <<'PY'
-          # 兼容 Python <3.11
+          # 兼容 Python 3.11+（tomllib）和旧版本（tomli）
           try:
               import tomllib
           except ImportError:
               import tomli as tomllib
-              
+
           import os
 
           # 读取 GitHub SHA 作为 BUILD_SHA
@@ -190,7 +189,7 @@ jobs:
 
           # 读取并修改 wrangler.ci.toml
           with open('wrangler.ci.toml', 'r') as f:
-              config = tomlib.load(f)
+              config = tomllib.load(f)
 
           # 添加 BUILD_SHA 到 vars 段
           if 'vars' not in config:
@@ -199,7 +198,7 @@ jobs:
 
           # 写回文件
           with open('wrangler.ci.toml', 'w') as f:
-              tomlib.dump(config, f)
+              tomllib.dump(config, f)
 
           # 验证 placement 区域
           placement = config.get("placement") or {}
@@ -232,7 +231,6 @@ jobs:
               raise SystemExit('wrangler.ci.toml: BUILD_SHA not set (expected CI to inject GITHUB_SHA)')
           
           print(f"OK: placement.region = aws:us-east-1; BUILD_SHA={build_sha_check}")
-          PY
         env:
           GITHUB_SHA: ${{ github.sha }}
 
