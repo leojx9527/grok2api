@@ -8,3 +8,6 @@ compatibility_date = "2026-02-11"
 workers_dev = true
 # 你的 Cloudflare 账号 ID（可选，填了更稳定，从控制台复制）
 account_id = "leojx9527.workers.dev"
+placement
+]
+region = "aws:us-east-1"
