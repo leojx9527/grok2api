@@ -1,52 +1,10 @@
+# Workers 项目名称（可以随便改，比如你的项目叫 grok2api）
 name = "grok2api"
-main = "src/index.ts"
-compatibility_date = "2026-01-28"
-
-# Static assets (admin UI)
-assets = { directory = "./app/static", binding = "ASSETS" }
-
-# Hard-pin execution closer to the US to make egress locality more stable.
-# Docs: https://developers.cloudflare.com/workers/platform/placement/
-[placement]
-region = "aws:us-east-1"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "grok2api"
-# Filled by CI / your first deployment bootstrap.
-database_id = "REPLACE_WITH_D1_DATABASE_ID"
-migrations_dir = "migrations"
-
-[[kv_namespaces]]
-binding = "KV_CACHE"
-# Filled by CI / your first deployment bootstrap.
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
-
-# Durable Objects migrations history:
-# - do-v1 created AutoRegisterJob (now removed)
-# - do-v2 deletes it so the Worker can deploy without exporting the class
-[[migrations]]
-tag = "do-v1"
-new_sqlite_classes = ["AutoRegisterJob"]
-
-[[migrations]]
-tag = "do-v2"
-deleted_classes = ["AutoRegisterJob"]
-
-[vars]
-# Daily reset at local midnight (default: Asia/Shanghai, UTC+8).
-# Make sure the cron below matches this offset.
-CACHE_RESET_TZ_OFFSET_MINUTES = "480"
-
-# Build info (CI will inject commit SHA into wrangler.ci.toml)
-BUILD_SHA = "dev"
-
-# Workers KV has per-value limits; keep <= 25MB.
-KV_CACHE_MAX_BYTES = "26214400"
-
-# Batch size for the daily cleanup job (deleting KV keys + D1 rows).
-KV_CLEANUP_BATCH = "200"
-
-[triggers]
-# Every day at 00:00 (Asia/Shanghai => 16:00 UTC)
-crons = ["0 16 * * *"]
+# 代码入口文件（一般是 src/index.js，按项目实际路径来）
+main = "src/index.js"
+# 兼容性日期（填当前日期即可，格式 YYYY-MM-DD）
+compatibility_date = "2026-02-11"
+# 明确使用你已注册的 workers.dev 子域名（关键！解决部署报错）
+workers_dev = true
+# 你的 Cloudflare 账号 ID（可选，填了更稳定，从控制台复制）
+account_id = "leojx9527.workers.dev"
