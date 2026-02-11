@@ -187,8 +187,8 @@ jobs:
           # 读取 GitHub SHA 作为 BUILD_SHA
           build_sha = os.environ.get('GITHUB_SHA', 'unknown')
 
-          # 读取并修改 wrangler.ci.toml
-          with open('wrangler.ci.toml', 'r') as f:
+          # 关键修复：tomllib.load 要求二进制模式 rb 打开文件
+          with open('wrangler.ci.toml', 'rb') as f:
               config = tomllib.load(f)
 
           # 添加 BUILD_SHA 到 vars 段
@@ -196,8 +196,8 @@ jobs:
               config['vars'] = {}
           config['vars']['BUILD_SHA'] = build_sha
 
-          # 写回文件
-          with open('wrangler.ci.toml', 'w') as f:
+          # 写回文件（文本模式即可）
+          with open('wrangler.ci.toml', 'w', encoding='utf-8') as f:
               tomllib.dump(config, f)
 
           # 验证 placement 区域
