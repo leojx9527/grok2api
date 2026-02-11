@@ -1,7 +1,7 @@
 # Workers 项目名称
 name = "grok2api"
 # 代码入口文件
-main = "src/index.js"
+main = "src/index.ts"
 # 兼容性日期
 compatibility_date = "2026-02-11"
 # 使用 workers.dev 子域名
