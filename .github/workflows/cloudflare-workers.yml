@@ -171,7 +171,6 @@ jobs:
           print(f"D1 database ready: {d1_name} ({d1_id})")
           print(f"Generated {dst_path}")
           PY
-
 - name: Verify US placement
   run: |
     python -u - <<'PY'
@@ -191,6 +190,24 @@ jobs:
     # 写回文件
     with open('wrangler.ci.toml', 'w') as f:
         tomlib.dump(config, f)
+
+    # 验证 placement 区域
+    with open("wrangler.ci.toml", "rb") as f:
+        data = tomlib.load(f)
+    placement = data.get("placement") or {}
+    region = (placement.get("region") or "").strip()
+    if region != "aws:us-east-1":
+        raise SystemExit(
+            'wrangler.ci.toml: missing required [placement] region = "aws:us-east-1"'
+        )
+
+    # 目录规范化函数
+    def normalize_dir(v: str) -> str:
+        s = (v or "").strip().replace("\\\\", "/")
+        while s.startswith("./"):
+            s = s[2:]
+        s = s.rstrip("/")
+        return s
   env:
     GITHUB_SHA: ${{ github.sha }}
 
