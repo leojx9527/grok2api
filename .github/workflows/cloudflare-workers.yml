@@ -174,8 +174,15 @@ jobs:
 
       - name: Verify US placement
         run: |
+          # 安装 tomllib（Python <3.11 需手动安装）
+          python -m pip install tomli
           python -u - <<'PY'
-          import tomlib
+          # 兼容 Python <3.11
+          try:
+              import tomllib
+          except ImportError:
+              import tomli as tomllib
+              
           import os
 
           # 读取 GitHub SHA 作为 BUILD_SHA
