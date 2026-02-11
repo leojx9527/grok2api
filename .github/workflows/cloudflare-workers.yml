@@ -172,10 +172,27 @@ jobs:
           print(f"Generated {dst_path}")
           PY
 
-      - name: Verify US placement
-        run: |
-          python -u - <<'PY'
-          import tomllib
+- name: Verify US placement
+  run: |
+    python -u - <<'PY'
+    import tomlib
+    import os
+
+    # 读取 GitHub SHA 作为 BUILD_SHA
+    build_sha = os.environ.get('GITHUB_SHA', 'unknown')
+
+    # 读取并修改 wrangler.ci.toml
+    with open('wrangler.ci.toml', 'r') as f:
+        config = tomlib.load(f)
+
+    # 添加 BUILD_SHA 配置
+    config['BUILD_SHA'] = build_sha
+
+    # 写回文件
+    with open('wrangler.ci.toml', 'w') as f:
+        tomlib.dump(config, f)
+  env:
+    GITHUB_SHA: ${{ github.sha }}
 
           with open("wrangler.ci.toml", "rb") as f:
               data = tomllib.load(f)
